@@ -8,9 +8,10 @@ public class Encrypter{
     }
 
     private int[] strToInt(String s){
-        int[] val = new int[4];
+        int[] val = new int[s.length()];
         for(int i=0; i<s.length(); i++){
-            val[i] = (Character.getNumericValue(s.charAt(i)) + 7)%10;
+            char c = s.charAt(i);
+            val[i] = (Character.getNumericValue(c) + 7)%10;
         }
         return val;
     }
