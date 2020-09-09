@@ -2,9 +2,7 @@ public class Encrypter{
     public String encrypt(String toBeEncrypted){
         int[] strToIntArr;
         strToIntArr = strToInt(toBeEncrypted);
-        String encryptedString;
-        encryptedString = makingRetVal(strToIntArr);
-        return encryptedString;
+        return makingRetVal(strToIntArr);
     }
 
     private int[] strToInt(String s){
