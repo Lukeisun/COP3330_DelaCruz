@@ -1,7 +1,5 @@
 import java.util.ArrayList;
 import java.util.Scanner;
-
-
 public class App {
     static Scanner scan = new Scanner(System.in);
     public static void main(String[] args) {
@@ -35,6 +33,10 @@ public class App {
 
     private static double getUserHeight(){
         System.out.println("Please type in your height in INCHES");
+        while(!scan.hasNextDouble()) {
+            System.out.println("Not a numerical value");
+            scan.next();
+        }
         double retVal = scan.nextDouble();
         scan.nextLine();
         if(retVal < 0.0){
@@ -47,6 +49,10 @@ public class App {
 
     private static double getUserWeight(){
         System.out.println("Please type in your weight in POUNDS");
+        while(!scan.hasNextDouble()) {
+            System.out.println("Not a numerical value");
+            scan.next();
+        }
         double retVal = scan.nextDouble();
         scan.nextLine();
         if(retVal < 0.0){
