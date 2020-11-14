@@ -160,9 +160,13 @@ public class App {
                 break;
             case 5:
                 list.viewUncompleteTasks();
-                System.out.print("Which task would you like to mark as complete? ");
+                System.out.println("Which task would you like to mark as complete? ");
                 int idx = askForIdx(list);
-                markTask(list, idx);
+                if(idx == -1){
+                    listMenu(list);
+                } else {
+                    markTask(list, idx);
+                }
                 break;
             case 6:
                 unmarkTask(list);
@@ -202,11 +206,15 @@ public class App {
     }
     //Unmark task
     private static void unmarkTask(TaskList list){
-        list.viewCompleteTasks();
-        System.out.println("Which task would you like to mark as incomplete? ");
-        int idx = askForIdx(list);
-        int[] completedArray = unmarkInArray(list.getIndexCompletedArray(), idx);
-        list.setIndexCompletedArray(completedArray);
+        if(list.getTasks().isEmpty()){
+            System.out.println("List is empty, add items first");
+        } else {
+            list.viewCompleteTasks();
+            System.out.println("Which task would you like to mark as incomplete? ");
+            int idx = askForIdx(list);
+            int[] completedArray = unmarkInArray(list.getIndexCompletedArray(), idx);
+            list.setIndexCompletedArray(completedArray);
+        }
     }
     public static int[] unmarkInArray(int[] completedArray,int idx){ //THIS METHOD IS ONLY PUBLIC FOR TESTING REASONS
         for(int i = 0; i <completedArray.length; i++) {
@@ -219,9 +227,13 @@ public class App {
     }
     //Mark task
     public static void markTask(TaskList list,int idx){ //THIS METHOD IS ONLY PUBLIC FOR TESTING REASONS
-        int[] completedArray = list.getIndexCompletedArray();
-        completedArray = markInArray(completedArray, idx);
-        list.setIndexCompletedArray(completedArray);
+        if(list.getTasks().isEmpty()){
+            System.out.println("List is empty, add items first");
+        } else {
+            int[] completedArray = list.getIndexCompletedArray();
+            completedArray = markInArray(completedArray, idx);
+            list.setIndexCompletedArray(completedArray);
+        }
     }
     private static int[] markInArray(int[] completedArray,int idx){
         for(int i = 0; i <completedArray.length; i++) {
@@ -267,20 +279,25 @@ public class App {
     }
     //Index validation
     private static int askForIdx(TaskList list) {
-        int idx = 0;
-        try {
-            idx = scan.nextInt();
-        } catch (Exception e) {
-            System.out.println("Must be an integer");
-            return askForIdx(list);
-        }
-        if (isValidIdx(idx, list)){
-            scan.nextLine();
-          return idx;
-          } else {
-            System.out.println("Invalid index");
-            System.out.print("Select an index: ");
-            return askForIdx(list);
+        if(list.getTasks().isEmpty()){
+            System.out.println("List is empty, try again");
+            return -1;
+        } else {
+            int idx = 0;
+            try {
+                idx = scan.nextInt();
+            } catch (Exception e) {
+                System.out.println("Must be an integer");
+                return askForIdx(list);
+            }
+            if (isValidIdx(idx, list)) {
+                scan.nextLine();
+                return idx;
+            } else {
+                System.out.println("Invalid index");
+                System.out.print("Select an index: ");
+                return askForIdx(list);
+            }
         }
     }
     public static Boolean isValidIdx(int idx, TaskList list){  //PUBLIC FOR TESTING
