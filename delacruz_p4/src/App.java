@@ -226,7 +226,6 @@ public class App {
     private static int[] markInArray(int[] completedArray,int idx){
         for(int i = 0; i <completedArray.length; i++) {
             if (completedArray[i] ==idx) {
-                System.out.println("Item already marked as complete");
                 break;
             }
             if (completedArray[i] == -1) {
@@ -240,6 +239,7 @@ public class App {
     private static void removeItem(TaskList list){
         System.out.print("Select an index to remove: ");
         int idx = askForIdx(list);
+        unmarkInArray(list.getIndexCompletedArray(), idx);
         list.removeTask(idx);
     }
     //Edit item
