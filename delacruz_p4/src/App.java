@@ -1,5 +1,6 @@
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,29 +11,35 @@ public class App {
             mainMenu();
     }
     //Menu
-    private static void mainMenu(){
+    private static void mainMenu() {
         int opt = 0;
-        while(true) {
+        while (true) {
             System.out.println("Main Menu");
             System.out.println("----------\n");
             System.out.println("1) Create a new list");
             System.out.println("2) Load an existing list");
             System.out.println("3) quit");
             opt = getMainInput();
-            if (opt == 1) {
-                System.out.println("new task list has been created\n");
-                TaskList newList = new TaskList();
-                listMenu(newList);
-            } else if (opt == 2) {
-                System.out.print("Enter filename to load: ");
-                String filename = validateFileName(scan.next());
-                readFile(filename);
-            } else if (opt == 3) {
-                System.out.println("Exiting...");
-                System.exit(0);
-            }
+            doMainOption(opt);
+
         }
     }
+    private static void doMainOption(int opt){
+        if (opt == 1) {
+            System.out.println("new task list has been created\n");
+            TaskList newList = new TaskList();
+            listMenu(newList);
+        } else if (opt == 2) {
+            System.out.print("Enter filename to load: ");
+            String filename = validateFileName(scan.next());
+            TaskList existingList = readFile(filename);
+            listMenu(existingList);
+        } else if (opt == 3) {
+            System.out.println("Exiting...");
+            System.exit(0);
+        }
+    }
+
 
     private static int getMainInput(){
         int opt = 0;
@@ -49,18 +56,62 @@ public class App {
         }
         return opt;
     }
-    //Reading file
-    private static void readFile(String filename){
+    //Reading file. PUBLIC FOR TESTING
+    public static TaskList readFile(String filename){
         TaskList list = new TaskList();
-        try {
-            File obj = new File(filename);
-            Scanner reader = new Scanner(obj);
-            while(reader.hasNextLine()){
-                System.out.println(reader.nextLine());
+        list = readTasksFromFile(list,filename);
+        return list;
+    }
+    private static TaskList readTasksFromFile(TaskList list, String filename){ //Really want to decompose this but unsure as to how I'd do it with scanner.
+        try(Scanner input = new Scanner(Paths.get(filename))){
+            while(input.hasNextLine()){
+                String date = null;
+                try {
+                    date = input.next();
+                } catch (NoSuchElementException e) {
+                    break;
+                }
+                TaskItem task = new TaskItem();
+                try {
+                    task.setDate(date);
+                } catch (IllegalArgumentException e){
+                    System.out.println("Invalid file(Date), enter a new file.");
+                    mainMenu();
+                }
+                input.next(); // skipping ":"
+                //Title
+                try {
+                    String title = "";
+                    while(input.hasNext()){
+                        String nextWord = input.next();
+                        if(nextWord.equals(":")) break;
+                        title = title.concat(nextWord+ " ");
+                    }
+                    task.setTitle(title);
+                } catch (IllegalArgumentException e){
+                    System.out.println("Invalid file (Title), enter a new file.");
+                    mainMenu();
+                }
+                // Checking if desc is equal to sentinel value for ""
+                String desc = "";
+                while(input.hasNext()){
+                    String nextWord = input.next();
+                    if(nextWord.equals(":")) break;
+                    desc = desc.concat(nextWord+ " ");
+                }
+                task.setDescription(desc);
+                //Marking item as complete/incomplete
+                String tOrF = input.next();
+                if(tOrF.equals("true")) {
+                    markTask(list, list.tasksSize());
+                }
+                list.addTask(task);
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("Error occurred");
+        } catch (IOException e) {
+            System.out.println("No such file, please insert new value");
+            mainMenu();
         }
+        return list;
     }
     //List
     private static void listMenu(TaskList list){
@@ -75,7 +126,7 @@ public class App {
             System.out.println("6) Un-mark an item as completed");
             System.out.println("7) Save the current list");
             System.out.println("8) Quit to main menu");
-            doMenuOption(list, getListInput());
+            doListMenuOption(list, getListInput());
         }
     }
     private static int getListInput(){
@@ -93,7 +144,7 @@ public class App {
         scan.nextLine();
         return opt;
     }
-    private static void doMenuOption(TaskList list, int opt){
+    private static void doListMenuOption(TaskList list, int opt){
         switch(opt){
             case 1:
                 list.viewTaskList();
@@ -108,7 +159,10 @@ public class App {
                 removeItem(list);
                 break;
             case 5:
-                markTask(list);
+                list.viewUncompleteTasks();
+                System.out.print("Which task would you like to mark as complete? ");
+                int idx = askForIdx(list);
+                markTask(list, idx);
                 break;
             case 6:
                 unmarkTask(list);
@@ -117,12 +171,34 @@ public class App {
                 System.out.print("Enter filename to save as: ");
                 String filename = scan.nextLine();
                 filename = validateFileName(filename);
-                list.saveTaskList(filename);
+                saveTaskList(filename, list);
                 break;
             case 8:
                 mainMenu();
                 break;
         }
+    }
+    //Save TaskList
+    private static void saveTaskList(String filename, TaskList list){
+        try  (FileWriter out = new FileWriter(filename)){
+            int counter =0;
+            for(TaskItem item: list.getTasks()){
+                String description = isDescEmpty(item.getDescription());
+                out.write(item.getDate() + " : " + item.getTitle() + " : " + description + " : " +
+                        list.isComplete(counter)+"\n");
+                counter++;
+            }
+        } catch (Exception e) {
+            System.out.println("Error printing to file");
+        }
+    }
+    //Handling if description is empty
+    private static String isDescEmpty(String description){
+        String retDescription = description;
+        if(description.equals("")){
+            retDescription = "EMPTY";
+        }
+        return retDescription;
     }
     //Unmark task
     private static void unmarkTask(TaskList list){
@@ -132,7 +208,7 @@ public class App {
         int[] completedArray = unmarkInArray(list.getIndexCompletedArray(), idx);
         list.setIndexCompletedArray(completedArray);
     }
-    private static int[] unmarkInArray(int[] completedArray,int idx){
+    public static int[] unmarkInArray(int[] completedArray,int idx){ //THIS METHOD IS ONLY PUBLIC FOR TESTING REASONS
         for(int i = 0; i <completedArray.length; i++) {
             if (completedArray[i] == idx) {
                 completedArray[i] = -1;
@@ -142,10 +218,7 @@ public class App {
         return completedArray;
     }
     //Mark task
-    private static void markTask(TaskList list){
-        list.viewUncompleteTasks();
-        System.out.print("Which task would you like to mark as complete? ");
-        int idx = askForIdx(list);
+    public static void markTask(TaskList list,int idx){ //THIS METHOD IS ONLY PUBLIC FOR TESTING REASONS
         int[] completedArray = list.getIndexCompletedArray();
         completedArray = markInArray(completedArray, idx);
         list.setIndexCompletedArray(completedArray);
@@ -210,7 +283,7 @@ public class App {
             return askForIdx(list);
         }
     }
-    private static Boolean isValidIdx(int idx, TaskList list){
+    public static Boolean isValidIdx(int idx, TaskList list){  //PUBLIC FOR TESTING
         if(idx >= list.tasksSize() || idx < 0)
             return false;
         else
@@ -270,7 +343,6 @@ public class App {
             String newFilename = scan.next();
             return validateFileName(newFilename);
         }
-        scan.nextLine();
         return filename;
     }
 }

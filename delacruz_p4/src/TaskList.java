@@ -1,4 +1,4 @@
-import java.io.FileWriter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -21,7 +21,7 @@ public class TaskList {
         this.tasks.set(idx, task);
     }
     public void removeTask(int idx){
-        this.tasks.remove(idx);
+            this.tasks.remove(idx);
     }
     public int tasksSize(){
         return this.tasks.size();
@@ -42,17 +42,6 @@ public class TaskList {
     //Index array helpers
     public int[] getIndexCompletedArray(){ return this.indexCompleted;}
     public void setIndexCompletedArray(int[] newArray){this.indexCompleted = newArray;}
-    public void saveTaskList(String filename){
-        try  (FileWriter out = new FileWriter(filename)){
-            int counter =0;
-            for(TaskItem item: tasks){
-                out.write(counter + ") " + item.getDate() + " : " + item.getTitle() + " : " + item.getDescription()+ " : Completed - " + isComplete(counter)+"\n");
-                counter++;
-            }
-        } catch (Exception e) {
-            System.out.println("Error printing to file");
-        }
-    }
 
 
     //Printing complete/uncomplete
@@ -80,7 +69,7 @@ public class TaskList {
             counter++;
         }
     }
-    private boolean isComplete(int idx){
+    public boolean isComplete(int idx){
         for(int i : indexCompleted){
             if(i == idx) return true;
         }
