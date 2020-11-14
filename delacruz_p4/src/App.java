@@ -289,7 +289,8 @@ public class App {
             try {
                 idx = scan.nextInt();
             } catch (Exception e) {
-                System.out.println("Must be an integer");
+                System.out.print("Must be an integer: ");
+                scan.next();
                 return askForIdx(list);
             }
             if (isValidIdx(idx, list)) {
