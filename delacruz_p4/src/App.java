@@ -162,9 +162,7 @@ public class App {
                 list.viewUncompleteTasks();
                 System.out.println("Which task would you like to mark as complete? ");
                 int idx = askForIdx(list);
-                if(idx == -1){
-                    listMenu(list);
-                } else {
+                if(idx != -1){
                     markTask(list, idx);
                 }
                 break;
@@ -249,10 +247,14 @@ public class App {
     }
     //Remove item
     private static void removeItem(TaskList list){
-        System.out.print("Select an index to remove: ");
-        int idx = askForIdx(list);
-        unmarkInArray(list.getIndexCompletedArray(), idx);
-        list.removeTask(idx);
+        if(list.getTasks().isEmpty()){
+            System.out.println("TaskList is empty");
+        } else {
+            System.out.print("Select an index to remove: ");
+            int idx = askForIdx(list);
+            unmarkInArray(list.getIndexCompletedArray(), idx);
+            list.removeTask(idx);
+        }
     }
     //Edit item
     private static void editItem(TaskList list){
