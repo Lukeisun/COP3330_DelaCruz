@@ -103,8 +103,13 @@ public class ContactApp {
             while(input.hasNextLine()){
                 String[] info = input.nextLine().split(",");
                 ContactItem contact = new ContactItem();
+                if(!(info[0].equals("F") || info[0].equals("L") || info[0].equals("E") ||info[0].equals("P")) ){
+                    System.out.println("meme");
+                    break;
+                }
                 for(int i = 0; i<info.length; i++){
                     try {
+
                         if (info[i].equals("F")) {
                             contact.setFirstName(info[i + 1]);
                         }
